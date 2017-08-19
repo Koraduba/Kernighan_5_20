@@ -76,6 +76,8 @@ void dirdcl(void)
 {
 	int type;
 
+	if (tokentype >= E1 && tokentype <= E5) return;
+
 	if (tokentype == '(')
 	{
 		printf("!");
@@ -117,6 +119,7 @@ void dirdcl(void)
 		else
 		{
 			func();
+			if (tokentype == E2) return;
 		}
 
 
@@ -140,7 +143,7 @@ void func(void)
 	type = gettoken();
 	while (type != ')')
 	{
-//		printf("%s", token);	
+		printf("%c", type);	
 		if (type == NAME)
 		{
 			for (int i = 0; i <= 3; i++)
@@ -158,6 +161,12 @@ void func(void)
 		{
 			strcat(out, " and");
 			type=gettoken();
+		}
+		else
+		{
+			while (gettoken() != '\n');
+			tokentype = E2;
+			return;
 		}
 	}
 
