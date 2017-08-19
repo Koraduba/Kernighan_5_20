@@ -5,6 +5,8 @@
 
 enum tt { NAME, PARENS, BRACKETS, E1, E2, E3, E4, E5 };
 
+char* dtype[] = { "char", "int", "long", "double" };
+
 #define MAXTOKEN 100
 
 char token[MAXTOKEN];
@@ -15,6 +17,7 @@ int tokentype;
 
 void dcl(void);
 void dirdcl(void);
+void func(void);
 
 int gettoken(void);
 
@@ -23,6 +26,7 @@ int main()
 
 	while (gettoken() != EOF)
 	{
+		
 		if ((strcmp(token, "char")) && (strcmp(token, "int")))
 		{
 			printf("Error: wrong datatype!\n");
@@ -102,14 +106,17 @@ void dirdcl(void)
 		return;
 	}
 
-
-	while ((type = gettoken()) == PARENS || type == BRACKETS)
+	while ((type = gettoken()) == PARENS || type == BRACKETS || type == '(')
 		if (type == PARENS) strcat(out, " function returning");
-		else
+		else if (type ==BRACKETS)
 		{
 			strcat(out, " array");
 			strcat(out, token);
 			strcat(out, " of");
+		}
+		else
+		{
+			func();
 		}
 
 
@@ -123,7 +130,40 @@ void dirdcl(void)
 
 }
 
+void func(void)
+{
+	int type;
+	char* temp;
 
+	strcat(out, " function with parameter(s)");
+
+	type = gettoken();
+	while (type != ')')
+	{
+//		printf("%s", token);	
+		if (type == NAME)
+		{
+			for (int i = 0; i <= 3; i++)
+
+				if (!(strcmp(token, dtype[i])))
+				{
+					temp = token;
+					strcat(out, " ");
+					while ((type = gettoken()) == '*') strcat(out, "pointer to ");
+					strcat(out, temp);
+				}
+
+		}
+		else if (type == ',')
+		{
+			strcat(out, " and");
+			type=gettoken();
+		}
+	}
+
+	strcat(out, " returning");
+
+}
 
 
 int gettoken(void)
