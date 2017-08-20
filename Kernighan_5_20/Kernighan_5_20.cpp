@@ -5,7 +5,7 @@
 
 enum tt { NAME, PARENS, BRACKETS, E1, E2, E3, E4, E5 };
 
-char* dtype[] = { "char", "int", "long", "double" };
+char* dtype[] = { "char", "int", "long", "double", "const" };
 
 #define MAXTOKEN 100
 
@@ -27,13 +27,20 @@ int main()
 	while (gettoken() != EOF)
 	{
 		
+		if (!strcmp(token, "const"))
+		{
+			strcpy(datatype, "const ");
+			gettoken();
+		}
+		else datatype[0] = '\0';
+
 		if ((strcmp(token, "char")) && (strcmp(token, "int")))
 		{
 			printf("Error: wrong datatype!\n");
 			while (gettoken() != '\n');
 			continue;
-		}
-		strcpy(datatype, token);
+		} 
+		strcat(datatype, token);
 
 		out[0] = '\0';
 		dcl();
@@ -108,6 +115,7 @@ void dirdcl(void)
 		return;
 	}
 
+
 	while ((type = gettoken()) == PARENS || type == BRACKETS || type == '(')
 		if (type == PARENS) strcat(out, " function returning");
 		else if (type ==BRACKETS)
@@ -136,30 +144,64 @@ void dirdcl(void)
 void func(void)
 {
 	int type;
+	int i=0;
 	char* temp;
+	int metka = 0;
 
 	strcat(out, " function with parameter(s)");
 
 	type = gettoken();
 	while (type != ')')
 	{
-		printf("%c", type);	
+		if (!(strcmp(token, "const")))
+
+			if (metka == 1)
+			{
+				while (gettoken() != '\n');
+				tokentype = E2;
+				return;
+			}
+			else
+			{
+				printf("&");
+				metka = 1;
+				type=gettoken();
+				printf("%d", type);
+
+				continue;
+			}	
+		
 		if (type == NAME)
 		{
-			for (int i = 0; i <= 3; i++)
+			printf("&");
 
+			for (i = 0; i <=3; i++)
 				if (!(strcmp(token, dtype[i])))
 				{
+					printf("&");
+
 					temp = token;
 					strcat(out, " ");
 					while ((type = gettoken()) == '*') strcat(out, "pointer to ");
+					if (metka)
+					{
+						metka = 0;
+						strcat(out, "const ");
+					}
 					strcat(out, temp);
+					break;
 				}
+			if (i == 4)
+			{
+				while (gettoken() != '\n');
+				tokentype = E2;
+				return;
+			}
 
 		}
-		else if (type == ',')
+		else if ((type == ',')&&(!metka))
 		{
-			strcat(out, " and");
+			strcat(out, " and"); 
 			type=gettoken();
 		}
 		else
@@ -168,6 +210,13 @@ void func(void)
 			tokentype = E2;
 			return;
 		}
+	}
+
+	if (metka)
+	{
+			while (gettoken() != '\n');
+			tokentype = E2;
+			return;
 	}
 
 	strcat(out, " returning");
